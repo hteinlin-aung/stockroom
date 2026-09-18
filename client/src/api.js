@@ -3,7 +3,6 @@
 //      and throw an Error with it (so the page can show it to the user)
 //   3. if it is ok, return the parsed JSON
 
-
 export async function request(path, options = {}) {
   const response = await fetch("/api" + path, {
     headers: { "Content-Type": "application/json" },
