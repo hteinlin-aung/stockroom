@@ -4,3 +4,5 @@ dist/
 *.db
 *.sqlite
 .DS_Store
+PHASE-*-WORKED.md
+BUILD-ORDER.md
