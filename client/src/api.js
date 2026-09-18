@@ -30,4 +30,9 @@ export const api = {
   updateProduct: (id, product) =>
     request(`/products/${id}`, { method: "PUT", body: JSON.stringify(product) }),
   deleteProduct: (id) => request(`/products/${id}`, { method: "DELETE" }),
+  
+  getMovements: (productId) =>
+    request(productId ? `/movements?productId=${productId}` : "/movements"),
+  createMovement: (movement) =>
+    request("/movements", { method: "POST", body: JSON.stringify(movement) }),
 }
