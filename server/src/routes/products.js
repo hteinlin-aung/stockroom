@@ -1,22 +1,11 @@
 import { Router } from "express"
 import db from "../db.js"
+import { PRODUCTS_WITH_STOCK } from "../lib/queries.js"
 
 const router = Router()
 
-const STOCK_SQL = `
-  COALESCE(SUM(CASE WHEN m.type = 'out' THEN -m.quantity ELSE m.quantity END), 0)
-`
-
 router.get("/", (req, res) => {
-  const products = db
-    .prepare(
-      `SELECT p.*, ${STOCK_SQL} AS currentStock
-       FROM products p
-       LEFT JOIN movements m ON m.product_id = p.id
-       GROUP BY p.id
-       ORDER BY p.name`
-    )
-    .all()
+  const products = db.prepare(`${PRODUCTS_WITH_STOCK} ORDER BY p.name`).all()
 
   res.json(products)
 })
@@ -25,13 +14,7 @@ router.get("/", (req, res) => {
 router.get("/:id", (req, res) => {
   const id = Number(req.params.id)
   const product = db
-    .prepare(
-      `SELECT p.*, ${STOCK_SQL} AS currentStock
-       FROM products p
-       LEFT JOIN movements m ON m.product_id = p.id
-       WHERE p.id = ?
-       GROUP BY p.id`
-    )
+    .prepare(`SELECT * FROM (${PRODUCTS_WITH_STOCK}) WHERE id = ?`)
     .get(id)
 
   if (!product) {

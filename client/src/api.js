@@ -35,4 +35,6 @@ export const api = {
     request(productId ? `/movements?productId=${productId}` : "/movements"),
   createMovement: (movement) =>
     request("/movements", { method: "POST", body: JSON.stringify(movement) }),
+    getSummary: () => request("/reports/summary"),
+  getLowStock: () => request("/reports/low-stock"),
 }
