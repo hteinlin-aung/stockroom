@@ -3,7 +3,7 @@
 Inventory and stock management for a small shop or warehouse — track products,
 record every stock movement, and see what needs reordering.
 
-**Live demo:** [link]
+**Live demo:** [https://stockroom-hteinlin.netlify.app]
 *(The API is on a free tier and sleeps after 15 minutes of inactivity. The first
 request can take up to a minute to wake it.)*
 
