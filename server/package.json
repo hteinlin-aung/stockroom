@@ -6,7 +6,9 @@
     "dev": "node --watch src/index.js",
     "start": "node src/index.js",
     "seed": "node src/seed.js",
-    "seed:movements": "node src/seed-movements.js"
+    "seed:movements": "node src/seed-movements.js",
+    "seed:all": "npm run seed && npm run seed:movements"
+
   },
   "dependencies": {
     "better-sqlite3": "^13.0.3",

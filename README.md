@@ -1,42 +1,52 @@
 # StockRoom
 
-> **TODO — fill this in yourself, in your own words.**
-> This is the most-read file in the whole repo. A reviewer spends about
-> thirty seconds here and decides whether to look at your code at all.
-> Replace every bracketed line below. Delete this quote block when done.
-
-[One sentence: what this is and who it's for.]
+Inventory and stock management for a small shop or warehouse — track products,
+record every stock movement, and see what needs reordering.
 
 **Live demo:** [link]
+*(The API is on a free tier and sleeps after 15 minutes of inactivity. The first
+request can take up to a minute to wake it.)*
 
 ![Dashboard](docs/screenshot-dashboard.png)
 
 ## The problem
 
-[2-3 sentences. What goes wrong without this tool? Mention that you worked on
-warehouse management modules during your internship and wanted your own
-version — that context is the reason this project is more interesting than a
-generic CRUD app.]
+built warehouse management and warehouse transfer modules during internship at NK Software House and wanted own version to show show
 
 ## Features
 
-- [ ] Product catalogue with SKU, category, cost and sale price
-- [ ] Stock movements in / out / adjustment, each with a note
-- [ ] Current stock derived from the movement ledger
-- [ ] Low-stock flagging against a per-product reorder level
-- [ ] Dashboard: stock value, low-stock list, recent activity
-- [ ] Search and filter
+- **Products** — catalogue with SKU, category, unit, cost and sale price, and a
+  per-product reorder level
+- **Stock movements** — record stock in, stock out, and adjustments, each with a
+  note, forming a full audit trail
+- **Derived stock** — current stock is calculated from the movement ledger, never
+  stored (see below)
+- **Negative stock prevention** — the API refuses a stock-out larger than what is
+  actually in stock, and says how much is available
+- **Low stock** — anything at or below its reorder level is flagged in the table
+  and listed on the dashboard
+- **Dashboard** — product count, total units, stock value at cost, low-stock
+  count, a reorder list and recent activity
+- **Search and filter** — by name or SKU, by category, or low stock only
 
 ## Tech
 
 React 19 · Vite · MUI · React Router · Node · Express · SQLite
+**Frontend** React 19 · Vite · Material UI · React Router
+**Backend** Node · Express · SQLite (better-sqlite3), hand-written SQL, no ORM
 
 ## Key decision: stock is calculated, not stored
 
-[Explain the ledger in your own words — why you didn't put a `quantity`
-column on the product and add/subtract from it. This paragraph is the one a
-senior engineer will actually read. Say what you gained (an audit trail, no
-lost updates) and what it cost (a join or a sub-query on every product list).]
+- The obvious design is a `quantity` column added to and subtract from.
+- This app instead stores every change as a row in `movements`, and
+  current stock is the sum of those rows.
+- Gain: a full audit trail, no lost updates from two changes at once, and the
+  ability to reconstruct stock at any past date.
+- Costs: a JOIN and a GROUP BY on every product query instead of
+  reading one column.
+- computed in SQL for list views to avoid N+1 queries,
+  and that the same rule exists as a pure function (`lib/stock.js`) used
+  by the write path to prevent negative stock.
 
 ## Running it locally
 
@@ -74,6 +84,10 @@ client/
 
 ## What I'd do next
 
-[3-4 bullets. Suppliers and purchase orders, user accounts, CSV export,
-multi-warehouse, tests. Saying what you deliberately left out of v1 reads as
-judgement — it shows you scoped the work rather than ran out of steam.]
+- **Suppliers and purchase orders** — turn the reorder list into an actual order
+- **User accounts** — right now anyone with the link can change stock
+- **Tests** — the stock calculation and the API validation are the obvious first
+  targets
+- **CSV export** — the reorder list is the report people actually want to email
+- **Multi-warehouse** — movements would gain a location, and stock becomes
+  per-location
