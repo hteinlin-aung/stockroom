@@ -9,18 +9,11 @@ request can take up to a minute to wake it.)*
 
 ![Dashboard](docs/screenshot-dashboard.png)
 
-## The problem
-
-Small shops and warehouses usually track stock in a spreadsheet, or not at all.
-It works until it doesn't: two people edit the same file, someone forgets to
-write down a sale, and the number on the screen stops matching the number on the
-shelf. When that happens there is no way to find out where it went wrong — the
-spreadsheet only shows the current figure, not how it got there. Things quietly
-run out, and nobody notices until a customer asks for them.
+## About
 
 During internship at NK Software House, I worked on the Warehouse modules and Reports modules of a POS system for a real client. That work is what made me want my own version — something small enough to finish and explain end to end, where I could make the design decisions myself instead of following an existing codebase.
 
-StockRoom is that: a single-user inventory tool for a shop or warehouse holding
+StockRoom is: a single-user inventory tool for a shop or warehouse holding
 a few hundred products. You add products, record every movement of stock in and
 out, and it tells you what you have and what needs reordering.
 
@@ -49,32 +42,12 @@ React 19 · Vite · MUI · React Router · Node · Express · SQLite
 
 ## Key decision: stock is calculated, not stored
 
-The obvious way to track stock is a `quantity` column on the product that you
-add to and subtract from. I deliberately did not do that.
-
-Instead, every change is stored as its own row in a `movements` table — a
-delivery of 120, a sale of 45, a damaged item written off — and the current
-stock is the sum of those rows. It works like a bank statement: the balance is
-not stored anywhere, it is the total of the transactions.
-
-**What this buys me.** Every number is explainable. If a product shows 38 in
-stock, I can show exactly which movements produced that figure and when. Two
-updates arriving at the same time cannot overwrite each other, because nothing
-is being overwritten — rows are only ever added. And because each movement is
-timestamped, stock at any past date is answerable without storing history
-separately.
-
-**What it costs.** Reading stock is no longer reading one column. Every product
-query needs a `LEFT JOIN` onto movements with a `GROUP BY`, which is more work
-for the database and more SQL to get right.
-
-**Where it lives.** For list views the calculation runs in SQL (`lib/queries.js`)
-so twelve products take one query instead of thirteen — avoiding the N+1 query
-problem. The same rule also exists as a pure function in `lib/stock.js`, which
-the write path uses to check that a stock-out would not push a product negative
-before accepting it. Having the rule in two places is a real trade-off; I kept
-both because the read path and the write path have genuinely different needs,
-and the SQL version is shared by every read rather than copy-pasted.
+Stock is calculated from a movements table, where every delivery, sale, or write-off is stored as a separate row. 
+The current stock is simply the sum of these movements, similar to a bank statement. This makes every stock figure 
+traceable, prevents concurrent updates from overwriting each other, and allows stock at any past date to be calculated.
+The trade-off is that reading stock requires a LEFT JOIN and GROUP BY. To avoid N+1 queries, list views calculate stock 
+in SQL (lib/queries.js) with one query for all products. The same calculation is also kept as a pure function 
+in lib/stock.js for validating stock-outs before they are accepted.
 
 
 ## Running it locally
@@ -110,13 +83,3 @@ client/
     pages/          Dashboard, Products, ProductDetail, Movements
     components/     shared UI
 ```
-
-## What I'd do next
-
-- **Suppliers and purchase orders** — turn the reorder list into an actual order
-- **User accounts** — right now anyone with the link can change stock
-- **Tests** — the stock calculation and the API validation are the obvious first
-  targets
-- **CSV export** — the reorder list is the report people actually want to email
-- **Multi-warehouse** — movements would gain a location, and stock becomes
-  per-location
